@@ -137,7 +137,9 @@ Right now the only parent control is a hidden long-press reset. Owners of a kids
 The spec's "optional art pass" (§12.5), plus sound. Emoji ship fine today; this is the glow-up.
 
 - **Custom illustrations** — `L · 🎨`. Replace emoji for word pictures, buddies, and rewards with
-  original art — still never shown before the blend (Rule 3).
+  original art — still never shown before the blend (Rule 3). The full asset list + exact
+  filenames are in `GRAPHICS-CHECKLIST.md`; needs a small `window.Art` loader (mirrors `Audio2`)
+  so custom files drop straight into `assets/art/`.
 - **Animated buddies with personality** — `L · 🎨`. Idle animations, reactions, little quirks.
 - **Music & richer SFX** — `M · 🎨`. Gentle, toggleable background music and a fuller sound palette
   (the current chimes are synthesized in `main.js`).

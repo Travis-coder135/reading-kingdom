@@ -17,15 +17,20 @@
  *   Audio2.unlock()                -> call once from a user gesture to satisfy autoplay rules
  *
  * CLIP FILES (all optional, dropped into assets/audio/ by the owner — see
- * AUDIO-CHECKLIST.md):
- *   letter_<l>.mp3   word_<word>.mp3   ui_<name>.mp3
- * The engine probes a clip the first time it's needed by simply trying to play
- * it; if it 404s / is missing it marks it absent and uses TTS from then on.
+ * AUDIO-CHECKLIST.md and the built-in recorder at record.html):
+ *   letter_<l>.<ext>   word_<word>.<ext>   ui_<name>.<ext>
+ * where <ext> is any of mp3 / m4a / ogg / wav / webm. The engine probes the
+ * first time a sound is needed, trying each format, and remembers which file
+ * won (or that none exist, in which case it uses TTS from then on).
  */
 window.Audio2 = (function () {
   'use strict';
 
   var AUDIO_DIR = 'assets/audio/';
+
+  // Recorded clips may be any of these formats; probed in this order (compressed
+  // + universally-playable first, .webm last since iOS may not decode it).
+  var CLIP_EXTS = ['mp3', 'm4a', 'ogg', 'wav', 'webm'];
 
   // Phoneme approximations fed to the synthesizer so TTS says the SOUND, not the
   // letter name. Tuned by ear at a slow rate / slightly higher pitch. Real
@@ -45,8 +50,7 @@ window.Audio2 = (function () {
   var GAP_BEFORE_WORD     = 220;                // ms pause before the whole word
 
   var speech = window.speechSynthesis || null;
-  var clipStatus = {};   // src -> 'present' | 'absent'
-  var clipCache = {};    // src -> HTMLAudioElement (reused once known present)
+  var clipResolved = {};   // base name (e.g. "letter_m") -> HTMLAudioElement | null
   var chosenVoice = null;
   var voicePicked = false;
   var unlocked = false;
@@ -105,39 +109,54 @@ window.Audio2 = (function () {
     });
   }
 
-  // Try to play a recorded clip; if it's missing/errors, run the TTS fallback.
-  // Resolves when the sound (clip or fallback) finishes.
-  function playClipOrTts(src, ttsFn) {
-    if (clipStatus[src] === 'absent') return ttsFn();
-
+  // Find the first existing clip for a base name (e.g. "letter_m"), trying each
+  // supported format. Probes with load() (not by blasting sound), and caches the
+  // winning element — or null if none exist — so we probe only once per sound.
+  function resolveClip(base) {
+    if (Object.prototype.hasOwnProperty.call(clipResolved, base)) {
+      return Promise.resolve(clipResolved[base]);
+    }
     return new Promise(function (resolve) {
-      var audio = clipCache[src] || new Audio(src);
+      var i = 0;
+      (function tryNext() {
+        if (i >= CLIP_EXTS.length) { clipResolved[base] = null; resolve(null); return; }
+        var a = new Audio();
+        a.preload = 'auto';
+        var settled = false;
+        function cleanup() { clearTimeout(timer); a.oncanplaythrough = a.onloadeddata = a.onerror = a.onabort = null; }
+        function good() { if (settled) return; settled = true; cleanup(); clipResolved[base] = a; resolve(a); }
+        function bad()  { if (settled) return; settled = true; cleanup(); tryNext(); }
+        a.oncanplaythrough = good;
+        a.onloadeddata = good;      // enough of the (short) clip is available
+        a.onerror = bad;            // 404 / unsupported format
+        a.onabort = bad;
+        var timer = setTimeout(bad, 3000);   // treat "no response" as missing
+        a.src = AUDIO_DIR + base + '.' + CLIP_EXTS[i++];
+        try { a.load(); } catch (e) { bad(); }
+      })();
+    });
+  }
+
+  // Play a resolved <audio> element from the start; resolves when it finishes.
+  function playElement(a) {
+    return new Promise(function (resolve) {
       var done = false;
-      function finish(viaError) {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        audio.onended = audio.onerror = null;
-        if (viaError) {
-          clipStatus[src] = 'absent';         // remember: use TTS next time
-          ttsFn().then(resolve);
-        } else {
-          clipStatus[src] = 'present';
-          clipCache[src] = audio;
-          resolve();
-        }
-      }
-      audio.onended = function () { finish(false); };
-      audio.onerror = function () { finish(true); };
-      // Safety backstop in case neither event fires.
-      var timer = setTimeout(function () { finish(false); }, 5000);
+      function fin() { if (done) return; done = true; clearTimeout(timer); a.onended = a.onerror = null; resolve(); }
+      a.onended = fin; a.onerror = fin;
+      var timer = setTimeout(fin, 6000);
       try {
-        audio.currentTime = 0;
-        var p = audio.play();
-        if (p && p.catch) p.catch(function () { finish(true); });
-      } catch (e) {
-        finish(true);
-      }
+        a.currentTime = 0;
+        var p = a.play();
+        if (p && p.catch) p.catch(function () { fin(); });
+      } catch (e) { fin(); }
+    });
+  }
+
+  // Play the recorded clip for `base` if one exists, else run the TTS fallback.
+  // Resolves when the sound (clip or fallback) finishes.
+  function playClipOrTts(base, ttsFn) {
+    return resolveClip(base).then(function (a) {
+      return a ? playElement(a) : ttsFn();
     });
   }
 
@@ -145,15 +164,14 @@ window.Audio2 = (function () {
 
   function playLetter(letter) {
     var l = String(letter).toLowerCase();
-    var phoneme = PHONEME[l] || l;
-    return playClipOrTts(AUDIO_DIR + 'letter_' + l + '.mp3', function () {
-      return speak(phoneme, LETTER_RATE, LETTER_PITCH);
+    return playClipOrTts('letter_' + l, function () {
+      return speak(PHONEME[l] || l, LETTER_RATE, LETTER_PITCH);
     });
   }
 
   function playWord(word) {
     var w = String(word).toLowerCase();
-    return playClipOrTts(AUDIO_DIR + 'word_' + w + '.mp3', function () {
+    return playClipOrTts('word_' + w, function () {
       return speak(w, WORD_RATE, WORD_PITCH);
     });
   }
@@ -175,17 +193,18 @@ window.Audio2 = (function () {
     return speak(text, SAY_RATE, SAY_PITCH);
   }
 
-  // Prefer a recorded ui_<name>.mp3 prompt, else speak the fallback text.
+  // Prefer a recorded ui_<name> prompt clip, else speak the fallback text.
   function sayUi(name, fallbackText) {
-    return playClipOrTts(AUDIO_DIR + 'ui_' + name + '.mp3', function () {
+    return playClipOrTts('ui_' + name, function () {
       return say(fallbackText || '');
     });
   }
 
   function stopAll() {
     try { if (speech) speech.cancel(); } catch (e) {}
-    Object.keys(clipCache).forEach(function (src) {
-      try { clipCache[src].pause(); } catch (e) {}
+    Object.keys(clipResolved).forEach(function (base) {
+      var a = clipResolved[base];
+      if (a) { try { a.pause(); } catch (e) {} }
     });
   }
 

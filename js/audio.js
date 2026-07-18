@@ -50,7 +50,7 @@ window.Audio2 = (function () {
   var GAP_BEFORE_WORD     = 220;                // ms pause before the whole word
 
   var speech = window.speechSynthesis || null;
-  var clipResolved = {};   // base name (e.g. "letter_m") -> HTMLAudioElement | null
+  var clipResolved = {};   // base (e.g. "letter_m") -> { el: <audio> } | 'none' | undefined
   var chosenVoice = null;
   var voicePicked = false;
   var unlocked = false;
@@ -109,41 +109,15 @@ window.Audio2 = (function () {
     });
   }
 
-  // Find the first existing clip for a base name (e.g. "letter_m"), trying each
-  // supported format. Probes with load() (not by blasting sound), and caches the
-  // winning element — or null if none exist — so we probe only once per sound.
-  function resolveClip(base) {
-    if (Object.prototype.hasOwnProperty.call(clipResolved, base)) {
-      return Promise.resolve(clipResolved[base]);
-    }
-    return new Promise(function (resolve) {
-      var i = 0;
-      (function tryNext() {
-        if (i >= CLIP_EXTS.length) { clipResolved[base] = null; resolve(null); return; }
-        var a = new Audio();
-        a.preload = 'auto';
-        var settled = false;
-        function cleanup() { clearTimeout(timer); a.oncanplaythrough = a.onloadeddata = a.onerror = a.onabort = null; }
-        function good() { if (settled) return; settled = true; cleanup(); clipResolved[base] = a; resolve(a); }
-        function bad()  { if (settled) return; settled = true; cleanup(); tryNext(); }
-        a.oncanplaythrough = good;
-        a.onloadeddata = good;      // enough of the (short) clip is available
-        a.onerror = bad;            // 404 / unsupported format
-        a.onabort = bad;
-        var timer = setTimeout(bad, 3000);   // treat "no response" as missing
-        a.src = AUDIO_DIR + base + '.' + CLIP_EXTS[i++];
-        try { a.load(); } catch (e) { bad(); }
-      })();
-    });
-  }
-
-  // Play a resolved <audio> element from the start; resolves when it finishes.
+  // Replay an already-resolved <audio> element from the start; resolves when it
+  // finishes. This runs from a cached element, so play() happens in a microtask
+  // right off the tap gesture — which iOS allows.
   function playElement(a) {
     return new Promise(function (resolve) {
-      var done = false;
+      var done = false, timer;
       function fin() { if (done) return; done = true; clearTimeout(timer); a.onended = a.onerror = null; resolve(); }
       a.onended = fin; a.onerror = fin;
-      var timer = setTimeout(fin, 6000);
+      timer = setTimeout(fin, 6000);   // never hang a blend sequence
       try {
         a.currentTime = 0;
         var p = a.play();
@@ -152,11 +126,41 @@ window.Audio2 = (function () {
     });
   }
 
-  // Play the recorded clip for `base` if one exists, else run the TTS fallback.
-  // Resolves when the sound (clip or fallback) finishes.
+  // Play the recorded clip for `base` if one exists, else fall back to TTS.
+  //
+  // The first time a sound is heard we try each supported format by ACTUALLY
+  // PLAYING it — synchronously off the tap, so iOS Safari's autoplay rules allow
+  // it — and remember the format that works. A missing/undecodable format falls
+  // through to the next, then to text-to-speech. Crucially we only remember a
+  // definite "no clip" after every format truly 404s; a blocked play (iOS) keeps
+  // the valid clip cached for next time instead of disabling the letter.
   function playClipOrTts(base, ttsFn) {
-    return resolveClip(base).then(function (a) {
-      return a ? playElement(a) : ttsFn();
+    var known = clipResolved[base];
+    if (known && known.el) return playElement(known.el);   // fast path: reuse cached clip
+    if (known === 'none') return ttsFn();                  // confirmed: no clip in any format
+
+    return new Promise(function (resolve) {
+      var i = 0;
+      (function tryNext() {
+        if (i >= CLIP_EXTS.length) { clipResolved[base] = 'none'; ttsFn().then(resolve); return; }
+        var a = new Audio(AUDIO_DIR + base + '.' + CLIP_EXTS[i++]);
+        var settled = false, backstop;
+        function seal() { settled = true; clearTimeout(backstop); a.onended = a.onerror = a.onplaying = null; }
+        a.onplaying = function () { clipResolved[base] = { el: a }; };            // this format works — remember it
+        a.onended   = function () { if (!settled) { seal(); resolve(); } };
+        a.onerror   = function () { if (!settled) { seal(); tryNext(); } };       // missing/undecodable — try next
+        backstop = setTimeout(function () { if (!settled) { seal(); resolve(); } }, 6000);
+        var p;
+        try { p = a.play(); } catch (e) { seal(); tryNext(); return; }
+        if (p && p.catch) p.catch(function (err) {
+          if (settled) return;
+          if (err && err.name === 'NotAllowedError') {          // autoplay-blocked but the clip is valid
+            clipResolved[base] = { el: a }; seal(); resolve();  // keep it cached; next tap will play it
+          } else {                                              // NotSupportedError etc. — wrong/absent format
+            seal(); tryNext();
+          }
+        });
+      })();
     });
   }
 
@@ -203,8 +207,8 @@ window.Audio2 = (function () {
   function stopAll() {
     try { if (speech) speech.cancel(); } catch (e) {}
     Object.keys(clipResolved).forEach(function (base) {
-      var a = clipResolved[base];
-      if (a) { try { a.pause(); } catch (e) {} }
+      var r = clipResolved[base];
+      if (r && r.el) { try { r.el.pause(); } catch (e) {} }
     });
   }
 

@@ -1,19 +1,25 @@
-# Audio clips go here
+# Audio clips
 
-This folder is where **optional** recorded voice clips live. The game works
-immediately without any of them — it falls back to the browser's built-in
-text-to-speech. Drop clips in here and the game uses them automatically, per
-file, wherever they exist.
+Recorded voice clips live here. The game uses a clip automatically wherever one
+exists (per sound) and falls back to the browser's built-in text-to-speech
+otherwise.
 
-**File names (all lowercase):**
+## Status
 
-- Letter sound → `letter_<letter>.mp3` (e.g. `letter_m.mp3`) — say the **sound**
+- ✅ **Letter sounds — all 25 recorded** (`letter_a.mp3` … `letter_z.mp3`, no `q`).
+  Letters, and the letter-by-letter part of blending, now play in a real voice.
+- ⬜ **Words** (`word_<word>.mp3`) — still text-to-speech until recorded.
+- ⬜ **Prompts / celebrations** (`ui_<name>.mp3`) — still text-to-speech until recorded.
+
+## File names (all lowercase)
+
+- Letter sound → `letter_<letter>.<ext>` (e.g. `letter_m.mp3`) — say the **sound**
   ("mmm"), not the letter name.
-- Word → `word_<word>.mp3` (e.g. `word_mat.mp3`) — say the whole word normally.
-- Prompt / celebration → `ui_<name>.mp3` (e.g. `ui_welcome.mp3`).
+- Word → `word_<word>.<ext>` (e.g. `word_mat.mp3`) — say the whole word normally.
+- Prompt / celebration → `ui_<name>.<ext>` (e.g. `ui_welcome.mp3`).
 
-See **`../../AUDIO-CHECKLIST.md`** for the full list, the exact names, and what
-to say for each. Start with Priority 1 (letters + prompts) for the biggest
-improvement.
+**Format:** `<ext>` can be `mp3`, `m4a`, `wav`, `ogg`, or `webm`. `.mp3` is the
+safest everywhere and is what the letter clips use.
 
-`.mp3` is safest; `.m4a`/`.wav` also work in Safari.
+See **`../../AUDIO-CHECKLIST.md`** for the full list and what to say for each.
+After adding files, commit and push so the hosted game (GitHub Pages) serves them.

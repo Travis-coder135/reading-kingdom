@@ -8,6 +8,11 @@ automatically wherever they exist.
 
 You don't have to record everything at once. Work top-down by **priority tier** below.
 
+> **✅ Status (updated 2026-07-17): letter sounds are DONE.** All 25 letter recordings are in
+> `assets/audio/` and live in the game — letters now play in your voice, and the "m…a…t" blend
+> sounds out each letter with your clips. **Words and prompts still use text-to-speech** until you
+> record them (Priority 1B and Priority 2 below). The section-A checkboxes are ticked to match.
+
 ---
 
 ## How to record (read this first)
@@ -19,8 +24,9 @@ You don't have to record everything at once. Work top-down by **priority tier** 
 - **Keep it warm and upbeat**, like reading a bedtime story. A little energy goes a long way.
 - **Short and clean.** Trim silence off the front and back of each clip. Keep the volume roughly
   consistent across all clips.
-- **File format:** `.mp3` is safest everywhere. `.m4a`/`.wav` also work in Safari; if you record
-  `.m4a`, either keep them as-is or convert to `.mp3` — just be consistent.
+- **File format:** the game accepts `.mp3`, `.m4a`, `.wav`, `.ogg`, or `.webm` — whatever your
+  recorder produces. `.mp3` is the safest everywhere and is what the letter clips use; just keep
+  the names consistent.
 - **File names must match exactly** (all lowercase). Naming rules:
   - Letter sound → `letter_<letter>.mp3` (e.g. `letter_m.mp3`)
   - Word → `word_<word>.mp3` (e.g. `word_mat.mp3`)
@@ -38,37 +44,38 @@ over time (text-to-speech covers any word you haven't recorded yet).
 This tier alone makes the whole game sound hand-made, because letters and prompts are where
 text-to-speech is weakest and where she'll hear your voice most.
 
-### A. Letter sounds (all 25 — alphabet minus Q)
+### A. Letter sounds (all 25 — alphabet minus Q) — ✅ DONE
 
-Say the **sound**, stretched a little. Cue in quotes; "don't say" is the name to avoid.
+All 25 are recorded and in `assets/audio/` as `letter_<letter>.mp3`. The cues below are kept for
+reference and any future re-recording. (Cue in quotes; "don't say" is the name to avoid.)
 
 | ✔ | Letter | File | Say (the sound) | Don't say |
 |---|--------|------|-----------------|-----------|
-| ☐ | a | `letter_a.mp3` | "ah" (as in **a**pple) | "ay" |
-| ☐ | b | `letter_b.mp3` | "buh" (quick, tiny 'uh') | "bee" |
-| ☐ | c | `letter_c.mp3` | "kuh" | "see" |
-| ☐ | d | `letter_d.mp3` | "duh" | "dee" |
-| ☐ | e | `letter_e.mp3` | "eh" (as in **e**gg) | "ee" |
-| ☐ | f | `letter_f.mp3` | "fff" (stretch it) | "eff" |
-| ☐ | g | `letter_g.mp3` | "guh" (hard g, as in **g**o) | "jee" |
-| ☐ | h | `letter_h.mp3` | "huh" (a breath) | "aitch" |
-| ☐ | i | `letter_i.mp3` | "ih" (as in **i**gloo) | "eye" |
-| ☐ | j | `letter_j.mp3` | "juh" | "jay" |
-| ☐ | k | `letter_k.mp3` | "kuh" | "kay" |
-| ☐ | l | `letter_l.mp3` | "lll" (stretch it) | "el" |
-| ☐ | m | `letter_m.mp3` | "mmm" (stretch it) | "em" |
-| ☐ | n | `letter_n.mp3` | "nnn" (stretch it) | "en" |
-| ☐ | o | `letter_o.mp3` | "aw" (as in **o**ctopus) | "oh" |
-| ☐ | p | `letter_p.mp3` | "puh" (quick pop) | "pee" |
-| ☐ | r | `letter_r.mp3` | "rrr" | "ar" |
-| ☐ | s | `letter_s.mp3` | "sss" (stretch it) | "ess" |
-| ☐ | t | `letter_t.mp3` | "tuh" (quick tap) | "tee" |
-| ☐ | u | `letter_u.mp3` | "uh" (as in **u**mbrella) | "you" |
-| ☐ | v | `letter_v.mp3` | "vvv" (stretch it) | "vee" |
-| ☐ | w | `letter_w.mp3` | "wuh" | "double-you" |
-| ☐ | x | `letter_x.mp3` | "ks" (as in fo**x**) | "ex" |
-| ☐ | y | `letter_y.mp3` | "yuh" | "why" |
-| ☐ | z | `letter_z.mp3` | "zzz" (stretch it) | "zee" |
+| ✅ | a | `letter_a.mp3` | "ah" (as in **a**pple) | "ay" |
+| ✅ | b | `letter_b.mp3` | "buh" (quick, tiny 'uh') | "bee" |
+| ✅ | c | `letter_c.mp3` | "kuh" | "see" |
+| ✅ | d | `letter_d.mp3` | "duh" | "dee" |
+| ✅ | e | `letter_e.mp3` | "eh" (as in **e**gg) | "ee" |
+| ✅ | f | `letter_f.mp3` | "fff" (stretch it) | "eff" |
+| ✅ | g | `letter_g.mp3` | "guh" (hard g, as in **g**o) | "jee" |
+| ✅ | h | `letter_h.mp3` | "huh" (a breath) | "aitch" |
+| ✅ | i | `letter_i.mp3` | "ih" (as in **i**gloo) | "eye" |
+| ✅ | j | `letter_j.mp3` | "juh" | "jay" |
+| ✅ | k | `letter_k.mp3` | "kuh" | "kay" |
+| ✅ | l | `letter_l.mp3` | "lll" (stretch it) | "el" |
+| ✅ | m | `letter_m.mp3` | "mmm" (stretch it) | "em" |
+| ✅ | n | `letter_n.mp3` | "nnn" (stretch it) | "en" |
+| ✅ | o | `letter_o.mp3` | "aw" (as in **o**ctopus) | "oh" |
+| ✅ | p | `letter_p.mp3` | "puh" (quick pop) | "pee" |
+| ✅ | r | `letter_r.mp3` | "rrr" | "ar" |
+| ✅ | s | `letter_s.mp3` | "sss" (stretch it) | "ess" |
+| ✅ | t | `letter_t.mp3` | "tuh" (quick tap) | "tee" |
+| ✅ | u | `letter_u.mp3` | "uh" (as in **u**mbrella) | "you" |
+| ✅ | v | `letter_v.mp3` | "vvv" (stretch it) | "vee" |
+| ✅ | w | `letter_w.mp3` | "wuh" | "double-you" |
+| ✅ | x | `letter_x.mp3` | "ks" (as in fo**x**) | "ex" |
+| ✅ | y | `letter_y.mp3` | "yuh" | "why" |
+| ✅ | z | `letter_z.mp3` | "zzz" (stretch it) | "zee" |
 
 *(No `q` — this set intentionally skips it.)*
 
@@ -157,7 +164,7 @@ van, red, big, top, bug`) already appear in earlier levels — **nothing new to 
 
 | Tier | Clips | Done? |
 |------|-------|-------|
-| Priority 1A — Letter sounds | 25 | ☐ |
+| Priority 1A — Letter sounds | 25 | ✅ done (2026-07-17) |
 | Priority 1B — Prompts & celebrations | ~20 | ☐ |
 | Level 1 words | 7 | ☐ |
 | Level 2 words | 10 | ☐ |
@@ -172,5 +179,6 @@ van, red, big, top, bug`) already appear in earlier levels — **nothing new to 
 | Level 11 words | 14 | ☐ |
 
 **Minimum to sound hand-made right away:** Priority 1 (letters + prompts) + Level 1 & 2 words =
-about **67 clips**. Everything else can trickle in; the game fills the gaps with text-to-speech
-until your recordings arrive.
+about **67 clips**. **Letters (25) are already done ✅**, so what's left toward that minimum is the
+~20 prompts plus Level 1 & 2 words (~17). Everything else can trickle in; the game fills the gaps
+with text-to-speech until your recordings arrive.

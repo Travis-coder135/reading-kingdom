@@ -50,8 +50,10 @@ These come from the phonics method and are non-negotiable — see `BUILD-SPEC.md
 - **Installable as a PWA** ("Add to Home Screen" on the iPad → full-screen, works offline).
 - **Data-driven:** all 12 levels of content live in one data file; the engine renders from it.
 - **Progress saved** in the browser (`localStorage`): buddy choice, unlocked levels, rewards.
-- **Audio:** designed for pre-recorded clips (correct letter *sounds*, not letter *names*), with
-  the browser's built-in text-to-speech as an automatic fallback so it's playable immediately.
+- **Audio:** plays pre-recorded clips (correct letter *sounds*, not letter *names*) when present,
+  with the browser's built-in text-to-speech as an automatic per-sound fallback. **All 25 letter
+  sounds are recorded** and in the game; words and prompts use text-to-speech until recorded.
+  Clips may be `.mp3`, `.m4a`, `.wav`, `.ogg`, or `.webm`.
 
 ## Project status
 
@@ -69,11 +71,16 @@ It runs today using the browser's built-in speech; drop in recordings anytime (s
 index.html            manifest.webmanifest   sw.js        (app shell + PWA)
 css/styles.css         data/curriculum.js                  (styling · the 12-level curriculum)
 js/  audio.js  emoji.js  progress.js  engine.js  main.js   (audio · pictures · save · rules · screens)
-assets/icons/…         assets/audio/  (drop recordings here — empty is fine)
+assets/icons/…         assets/audio/  (25 recorded letter sounds ✔ — add words/prompts here too)
 ```
 
 The decodability check runs on every boot and passed for all 12 levels (0 violations); the whole
 buddy → map → blend → celebration → trophy flow was smoke-tested end-to-end.
+
+**Audio status:** the 25 recorded letter sounds (`letter_a.mp3` … `letter_z.mp3`) are in and live —
+the game speaks letters in a real voice, and blending sounds out each letter with those clips.
+Whole words and spoken prompts fall back to the browser's text-to-speech until recorded; see
+`AUDIO-CHECKLIST.md` to add them (any of mp3/m4a/wav/ogg/webm — just drop them in and push).
 
 ## How to run it (once built)
 

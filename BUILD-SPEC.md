@@ -10,6 +10,20 @@ reward loop.
 
 ---
 
+> **As-built updates (post-spec).** This document is the original plan; the shipped game follows
+> it, with these refinements worth knowing up front:
+> - **Letter sounds recorded.** All 25 letter clips (`letter_a.mp3` … `letter_z.mp3`) are recorded
+>   in the owner's voice and live. Whole words and spoken prompts still use TTS until recorded.
+> - **Audio formats.** Clips may be `.mp3`, `.m4a`, `.wav`, `.ogg`, or `.webm` (not only mp3).
+> - **iPad-safe playback.** Clips play from within the tap gesture so iPad Safari's autoplay rules
+>   don't silence them; a transient load failure never permanently disables a letter.
+> - **Word display "like a book."** The word is shown as plain, connected letters on a light page
+>   (no per-letter flashcard boxes, no vowel/consonant colour) — each still tappable for its sound.
+>   See §7.
+> - **Blend pacing.** During a blend the letters play ~1.4× (pitch preserved) with a short ~40 ms
+>   gap, so it reads as one connected blend. See §8.
+> - **Deployed.** Hosted on GitHub Pages and installable to the iPad home screen.
+
 ## 1. Hard requirements (do not violate these)
 
 The pedagogy is the product. Every one of these is a correctness requirement, not a preference:
@@ -187,14 +201,18 @@ knows most sounds — never a gate).
 State: a book = ordered list of words; render one word at a time.
 
 Per word:
-1. Render the word as **separate letter tiles** in a row (e.g. `m` `a` `t`), large and tappable.
-   The buddy watches from the side. A progress indicator (e.g. stars along a path) shows how
-   many words are done / remaining in this book.
-2. **Tap a tile** → it animates (pop/glow) and plays that letter's **sound** (phoneme). She may
-   tap tiles any number of times, in any order. No penalty, no required order.
-3. **Blend action** → a big friendly **Blend** button (magnet/arrow icon). On tap: tiles slide
-   together, then audio plays the blended word "slow-then-natural" (`m…a…t` → "mat"). *(Blend as
-   a button is recommended for age 5; drag-to-blend is an acceptable alternative but harder.)*
+1. Render the word as a **readable word** — plain, connected letters on a light "page" (e.g.
+   `mat`, *not* three separated flashcard tiles), large and dark like print, so she can read the
+   word itself. Each letter is still its own tap target. The buddy watches from the side. A
+   progress indicator (e.g. stars along a path) shows how many words are done / remaining.
+   *(As built: this replaced the original separated-tiles look so words look like real words; the
+   per-letter tap-for-sound behaviour is unchanged.)*
+2. **Tap a letter** → it lifts with a soft highlight and plays that letter's **sound** (phoneme).
+   She may tap letters any number of times, in any order. No penalty, no required order.
+3. **Blend action** → a big friendly **Blend** button (magnet icon). On tap the letters play in
+   sequence — sped up ~1.4× (pitch preserved) with only a short gap between them, so it reads as
+   one connected blend rather than three spaced-out sounds — then the whole word is spoken.
+   *(Blend is a button, chosen for age 5; drag-to-blend was the alternative.)*
 4. **Confirmation:** the word's emoji picture pops in (this is the first time any picture
    appears), a happy chime plays, buddy reacts. A forward arrow (or a tap anywhere) advances.
 5. After the last word → book-complete celebration (§6.4).
@@ -208,10 +226,13 @@ Speak everything: letter sounds, whole words, celebrations, and navigation promp
 
 - **`window.Audio2` API** (suggested): `playLetter(letter)`, `playWord(word)`,
   `playBlend(word)` (letters slow, then the word), `say(text)` for prompts/celebrations.
-- **Preferred source: pre-recorded clips** in `assets/audio/` (`letter_m.mp3`, `word_mat.mp3`,
-  …). If a clip exists, play it. Pre-recorded is the phonics gold standard because it produces
-  correct **phonemes**; browser TTS says letter **names**. Provide a manifest of exactly which
-  clips are wanted so the owner can record them (his own voice is a nice motivator).
+- **Preferred source: pre-recorded clips** in `assets/audio/` — `letter_<l>`, `word_<word>`, and
+  `ui_<name>` in any of `.mp3` / `.m4a` / `.wav` / `.ogg` / `.webm`. If a clip exists, play it.
+  Pre-recorded is the phonics gold standard because it produces correct **phonemes**; browser TTS
+  says letter **names**. `AUDIO-CHECKLIST.md` is the manifest of wanted clips. **As built: all 25
+  letter clips are recorded (owner's voice) and live**; whole words and prompts still use TTS.
+  Clips are played from within the tap gesture (so iPad Safari doesn't silence them), and during a
+  blend the letter clips are sped up ~1.4× with pitch preserved and tight gaps.
 - **Fallback: Web Speech API** (`speechSynthesis`) so the game is fully playable *before any clip
   is recorded*. For **letters**, feed the synthesizer a phoneme approximation, not the letter
   name. Suggested approximations (tune by ear; slower rate ~0.7, slightly higher pitch):
@@ -284,10 +305,10 @@ Store earned rewards; show them on the trophy shelf; tapping one replays a happy
 - [ ] Works in iPad Safari in landscape with tap targets ≥ ~64px; portrait shows a rotate hint.
 - [ ] Installable via "Add to Home Screen" and launches full-screen; core play works offline.
 
-## 14. Open decisions (owner can pick; sensible defaults in brackets)
+## 14. Decisions (resolved, as built)
 
-- Blend trigger: **button** [recommended] vs. drag-tiles-together.
-- Orientation: **landscape lock** [recommended] vs. portrait.
-- Hosting: local LAN server vs. **free public URL** (Netlify/GitHub Pages) [recommended for easy
-  reopening].
-- Audio: **owner records his own voice** [recommended, great motivator] vs. generated TTS clips.
+- Blend trigger: **button** ✓ (chosen over drag-tiles-together).
+- Word display: **plain connected letters on a page, "like a book"** ✓ (not separated tiles).
+- Orientation: **landscape**, with a friendly "turn me sideways" hint in portrait ✓.
+- Hosting: **GitHub Pages** (free public URL), installable to the iPad home screen ✓.
+- Audio: **owner records his own voice** ✓ — the 25 letter sounds are done; words/prompts optional.

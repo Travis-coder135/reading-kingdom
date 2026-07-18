@@ -37,8 +37,9 @@ These come from the phonics method and are non-negotiable — see `BUILD-SPEC.md
 
 1. **Pick your buddy** (puppy, kitten, pony/unicorn, bunny…) — appears throughout.
 2. **Kingdom map** with 12 stops (the 12 levels). The next one gently pulses; locked ones sleep.
-3. **A book** = 4–8 words. For each word: tap the letter tiles to hear their sounds → tap
-   **Blend** → the word is spoken and a picture pops up as a reward.
+3. **A book** = 4–8 words. Each word is shown like a word in a book (plain, connected letters);
+   she can tap any letter to hear its sound → tap **Blend** → the word is spoken and a picture
+   pops up as a reward.
 4. **Finish the book** → confetti, buddy dance, spoken *"You read the whole book!"*, and a new
    collectible (medal / crown / animal sticker) for the **trophy shelf**.
 5. Finishing a level unlocks the next stop on the map.
@@ -82,21 +83,32 @@ the game speaks letters in a real voice, and blending sounds out each letter wit
 Whole words and spoken prompts fall back to the browser's text-to-speech until recorded; see
 `AUDIO-CHECKLIST.md` to add them (any of mp3/m4a/wav/ogg/webm — just drop them in and push).
 
-## How to run it (once built)
+**Recent updates:**
+- 🎙️ All 25 **letter sounds recorded** in the owner's voice and live (words/prompts still TTS).
+- 🍎 Audio now accepts **mp3 / m4a / wav / ogg / webm** (not just mp3).
+- 📱 **iPad playback fix** — clips play from the tap, so Safari never silences a letter.
+- ⚡ **Faster blend** — letters play ~1.4× (pitch kept) with tighter gaps, so "s‑a‑m" is connected.
+- 📖 **Words look like a book** — plain connected letters on a page (still tap‑for‑sound), instead
+  of separated flashcard tiles.
+- 🚀 **Live on GitHub Pages**, installable to the iPad home screen.
 
-No build tools needed. Serve the folder and open it in a browser:
+## How to run it
+
+**Live (recommended):** it's hosted on **GitHub Pages** —
+`https://travis-coder135.github.io/reading-kingdom/`. Open that in Safari on the iPad, turn to
+landscape, then Share → **Add to Home Screen** for a full-screen app icon. Pushing to `main`
+redeploys it automatically. *(After an update, reload twice so the offline cache refreshes.)*
+
+**Locally (for development):** no build step. From the project folder, serve it with any static
+server and open the printed URL — e.g. with Node:
 
 ```bash
-# from inside the reading-kingdom/ folder
-python -m http.server 8000
+npx serve .
 ```
 
-Then:
-- **On this computer:** open `http://localhost:8000`.
-- **On the iPad (same Wi-Fi):** open `http://<this-computer-IP>:8000` in Safari, then use the
-  Share menu → **Add to Home Screen** for a full-screen app icon.
-- **Or host it free** (Netlify / GitHub Pages / Vercel) for a permanent URL you can reopen
-  anytime and add to the iPad home screen.
+Then open it on this computer, or on the iPad over the same Wi‑Fi at `http://<computer-ip>:<port>`.
+Opening `index.html` straight from disk also works for a quick look (audio uses the browser voice;
+the offline service worker just stays dormant from `file://`).
 
 ## Content & copyright note
 

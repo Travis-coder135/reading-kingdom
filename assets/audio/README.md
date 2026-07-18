@@ -21,5 +21,9 @@ otherwise.
 **Format:** `<ext>` can be `mp3`, `m4a`, `wav`, `ogg`, or `webm`. `.mp3` is the
 safest everywhere and is what the letter clips use.
 
+**Tip:** during a blend the letter clips play a little faster (pitch kept), so
+record each sound clearly at a natural, unhurried pace — the game handles the
+speed-up.
+
 See **`../../AUDIO-CHECKLIST.md`** for the full list and what to say for each.
 After adding files, commit and push so the hosted game (GitHub Pages) serves them.

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Reading Kingdom</title>
+
+  <!-- Fill the iPad screen; no zoom (it's a touch game, not a document). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+
+  <!-- Installable / full-screen on iOS "Add to Home Screen". -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Reading Kingdom" />
+  <meta name="theme-color" content="#9d8cff" />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Persistent controls (speaker = hear it again, trophy = shelf). -->
+  <div id="topbar" class="hidden"></div>
+
+  <!-- Screens are rendered into here by js/main.js. -->
+  <div id="app"></div>
+
+  <!-- Confetti / celebration effects layer. -->
+  <div id="fx"></div>
+
+  <!-- Shown only in portrait: a friendly "turn me sideways" hint. -->
+  <div id="rotate">
+    <div class="rotate-emoji">📱</div>
+    <div class="rotate-text">Turn me sideways! 🔄</div>
+  </div>
+
+  <!--
+    Plain <script> tags (no modules, no fetch) so the game also runs when opened
+    straight from a file:// path. Load order matters — data first, then helpers,
+    then the engine, then main (BUILD-SPEC §3).
+  -->
+  <script src="data/curriculum.js"></script>
+  <script src="js/emoji.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

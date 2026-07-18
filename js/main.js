@@ -202,14 +202,21 @@
   // =========================================================================
   // SCREEN 1 — Buddy picker  (BUILD-SPEC §6.1)
   // =========================================================================
-  function showBuddyPicker() {
-    setTopbar({ visible: false });
+  // opts.change = true when re-picking from the map (keeps all progress, and shows
+  // a back button + a check on the current buddy). No args = first-launch pick.
+  function showBuddyPicker(opts) {
+    opts = opts || {};
+    var change = !!opts.change;
+    setTopbar(change ? { visible: true, left: [homeBtn()], right: [speakerBtn()] } : { visible: false });
 
     var grid = el('div', { 'class': 'buddy-grid' });
     BUDDIES.forEach(function (b) {
+      var isCurrent = change && window.Progress.getBuddy() === b.id;
+      var kids = [el('div', { 'class': 'buddy-emoji' }, b.emoji)];
+      if (isCurrent) kids.push(el('span', { 'class': 'buddy-current-badge', 'aria-hidden': 'true' }, '✓'));
       var card = el('button', {
-        'class': 'buddy-card',
-        'aria-label': b.name,
+        'class': 'buddy-card' + (isCurrent ? ' current' : ''),
+        'aria-label': b.name + (isCurrent ? ' (your buddy now)' : ''),
         onclick: function () {
           window.Audio2.unlock(); SFX.resume();
           if (card.classList.contains('picked')) return;
@@ -218,9 +225,9 @@
           SFX.sparkle();
           window.Audio2.sayUi('buddy_' + b.id, b.name + '!');
           confetti(20);
-          setTimeout(showMap, 950);
+          setTimeout(showMap, 950);   // progress is untouched — setBuddy only changes the buddy
         }
-      }, [el('div', { 'class': 'buddy-emoji' }, b.emoji)]);
+      }, kids);
       grid.appendChild(card);
     });
 
@@ -230,12 +237,16 @@
       grid
     ]);
 
-    state.replayFn = function () { window.Audio2.sayUi('pick_buddy', 'Pick your buddy!'); };
+    state.replayFn = function () { window.Audio2.sayUi('pick_buddy', change ? 'Pick a new buddy!' : 'Pick your buddy!'); };
     mount(screen);
 
-    window.Audio2.sayUi('welcome', 'Welcome to the Reading Kingdom!').then(function () {
-      return window.Audio2.sayUi('pick_buddy', 'Pick your buddy!');
-    });
+    if (change) {
+      window.Audio2.say('Pick a new buddy!');
+    } else {
+      window.Audio2.sayUi('welcome', 'Welcome to the Reading Kingdom!').then(function () {
+        return window.Audio2.sayUi('pick_buddy', 'Pick your buddy!');
+      });
+    }
   }
 
   // =========================================================================
@@ -298,9 +309,19 @@
       })(i);
     }
 
+    // The map buddy is tappable — tap it to change your buddy (keeps progress).
+    var mapBuddy = makeBuddy('buddy-map');
+    mapBuddy.setAttribute('role', 'button');
+    mapBuddy.setAttribute('aria-label', 'Change your buddy');
+    mapBuddy.appendChild(el('span', { 'class': 'buddy-swap-badge', 'aria-hidden': 'true' }, '🔄'));
+    mapBuddy.addEventListener('click', function () {
+      window.Audio2.unlock(); SFX.resume(); SFX.pop();
+      showBuddyPicker({ change: true });
+    });
+
     var screen = el('div', { 'class': 'screen map-screen' }, [
       el('div', { 'class': 'map-header' }, allDone ? '👑 Reading Kingdom 👑' : '🏰 Reading Kingdom'),
-      el('div', { 'class': 'map-area' }, [svg, stops, makeBuddy('buddy-map')])
+      el('div', { 'class': 'map-area' }, [svg, stops, mapBuddy])
     ]);
 
     state.replayFn = function () {

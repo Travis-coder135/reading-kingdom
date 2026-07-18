@@ -152,6 +152,34 @@ button {
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes pickBounce { 0% { transform: scale(1); } 30% { transform: scale(1.18); } 60% { transform: scale(.95); } 100% { transform: scale(1.06); } }
 
+/* Change-buddy: a check on the current buddy, and a swap badge on the map buddy. */
+.buddy-card { position: relative; }
+.buddy-card.current { box-shadow: 0 0 0 6px var(--good), var(--shadow-lg); }
+.buddy-current-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 1.7em; height: 1.7em;
+  border-radius: 50%;
+  background: var(--good);
+  color: #fff;
+  font-weight: 800;
+  font-size: clamp(15px, 2.4vmin, 24px);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+}
+.buddy-map { cursor: pointer; }
+.buddy-swap-badge {
+  position: absolute;
+  top: -6px; right: -10px;
+  font-size: clamp(16px, 2.6vmin, 26px);
+  line-height: 1;
+  background: var(--card);
+  border-radius: 50%;
+  padding: 0.16em 0.2em;
+  box-shadow: var(--shadow);
+}
+
 /* ===========================================================================
    KINGDOM MAP
    =========================================================================== */

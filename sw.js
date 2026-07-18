@@ -10,7 +10,7 @@
  *
  * Bump CACHE_VERSION whenever the shell files change to force an update.
  */
-var CACHE_VERSION = 'reading-kingdom-v1';
+var CACHE_VERSION = 'reading-kingdom-v2';
 
 var APP_SHELL = [
   './',

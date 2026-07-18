@@ -280,36 +280,46 @@ button {
 .progress-dots .dot { font-size: clamp(20px, 3.4vmin, 32px); color: rgba(255,255,255,.7); line-height: 1; }
 .progress-dots .dot.filled { color: var(--gold); filter: drop-shadow(0 2px 3px rgba(0,0,0,.15)); }
 
+/* The word reads like text on a page: one light "paper" panel holding the whole
+   word in a single dark colour (no per-letter boxes), so "cat" looks like a word
+   — but each letter is still its own tappable target for its sound. */
 .word-row {
   display: flex;
-  gap: clamp(10px, 2.4vw, 26px);
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2px, 0.7vw, 10px);
+  max-width: 92vw;
+  background: var(--card);
+  border-radius: clamp(18px, 3.5vmin, 34px);
+  box-shadow: var(--shadow-lg);
+  padding: clamp(8px, 2vmin, 22px) clamp(20px, 5vw, 60px) clamp(12px, 2.6vmin, 30px);
   transition: gap .42s cubic-bezier(.34,1.56,.64,1);
 }
-.word-row.merging { gap: 0; animation: mergePulse .5s ease; }
+.word-row.merging { animation: mergePulse .5s ease; }
 @keyframes mergePulse { 0%{transform:scale(1);} 55%{transform:scale(1.05);} 100%{transform:scale(1);} }
 
 .tile {
-  width: clamp(72px, 15vmin, 150px);
-  height: clamp(88px, 18vmin, 180px);
-  border-radius: clamp(14px, 3vmin, 26px);
-  background: var(--card);
-  color: var(--consonant);
-  border: clamp(3px, .7vmin, 6px) solid var(--consonant-soft);
-  box-shadow: var(--shadow);
-  font-size: clamp(48px, 11vmin, 110px);
+  min-width: clamp(38px, 6vw, 60px);
+  padding: 0.04em 0.03em;
+  border-radius: 0.16em;
+  background: transparent;
+  color: var(--ink);
+  border: none;
+  font-size: clamp(60px, 15vmin, 150px);
   font-weight: 800;
-  display: grid;
-  place-items: center;
-  line-height: 1;
-  transition: transform .1s ease;
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .1s ease, background-color .15s ease;
 }
-.tile.vowel { color: var(--vowel); border-color: var(--vowel-soft); }
-.tile:active { transform: scale(.92); }
-.tile.tap { animation: tileTap .4s ease; }
-@keyframes tileTap {
-  0% { transform: scale(1); }
-  35% { transform: translateY(-14px) scale(1.12); box-shadow: var(--shadow-lg); }
-  100% { transform: scale(1); }
+.tile.vowel { color: var(--ink); }   /* plain "like a book": every letter the same colour */
+.tile:active { transform: scale(.9); }
+.tile.tap { animation: tileTapPlain .45s ease; }
+@keyframes tileTapPlain {
+  0%   { transform: scale(1);                      background-color: transparent; }
+  30%  { transform: translateY(-10px) scale(1.14); background-color: rgba(255, 210, 74, .6); }
+  100% { transform: scale(1);                      background-color: transparent; }
 }
 
 .blend-area { min-height: clamp(70px, 12vmin, 110px); display: grid; place-items: center; }

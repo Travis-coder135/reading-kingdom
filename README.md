@@ -65,6 +65,7 @@ It runs today using the browser's built-in speech; drop in recordings anytime (s
 - `README.md` — this file (the vision + overview).
 - `BUILD-SPEC.md` — the full, self-contained build specification.
 - `AUDIO-CHECKLIST.md` — what to record (optional) to replace text-to-speech with your own voice.
+- `ROADMAP.md` — ideas and future build-outs, prioritized by impact vs. effort.
 
 **What's in the folder now:**
 

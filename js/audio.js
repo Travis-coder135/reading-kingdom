@@ -46,8 +46,10 @@ window.Audio2 = (function () {
   var LETTER_RATE = 0.7,  LETTER_PITCH = 1.1;   // slow + a touch bright for phonemes
   var WORD_RATE   = 0.9,  WORD_PITCH   = 1.05;
   var SAY_RATE    = 0.95, SAY_PITCH    = 1.05;
-  var GAP_BETWEEN_LETTERS = 150;                // ms pause between phonemes in a blend
-  var GAP_BEFORE_WORD     = 220;                // ms pause before the whole word
+  var GAP_BETWEEN_LETTERS = 40;                 // ms pause between letters in a blend (tight & connected)
+  var GAP_BEFORE_WORD     = 160;                // ms pause before the whole word
+  var BLEND_CLIP_RATE     = 1.4;                // speed up recorded letter clips during a blend (pitch kept)
+  var BLEND_LETTER_RATE   = 1.0;                // TTS-fallback letter rate during a blend (vs 0.7 when tapped)
 
   var speech = window.speechSynthesis || null;
   var clipResolved = {};   // base (e.g. "letter_m") -> { el: <audio> } | 'none' | undefined
@@ -109,10 +111,20 @@ window.Audio2 = (function () {
     });
   }
 
+  // Set playback speed while keeping pitch natural (no chipmunk) — used to make
+  // the blend quicker than tapping a single tile.
+  function applyRate(a, rate) {
+    try {
+      a.preservesPitch = true;
+      a.webkitPreservesPitch = true;   // older iOS Safari
+      a.playbackRate = rate || 1;
+    } catch (e) {}
+  }
+
   // Replay an already-resolved <audio> element from the start; resolves when it
   // finishes. This runs from a cached element, so play() happens in a microtask
   // right off the tap gesture — which iOS allows.
-  function playElement(a) {
+  function playElement(a, rate) {
     return new Promise(function (resolve) {
       var done = false, timer;
       function fin() { if (done) return; done = true; clearTimeout(timer); a.onended = a.onerror = null; resolve(); }
@@ -120,6 +132,7 @@ window.Audio2 = (function () {
       timer = setTimeout(fin, 6000);   // never hang a blend sequence
       try {
         a.currentTime = 0;
+        applyRate(a, rate);
         var p = a.play();
         if (p && p.catch) p.catch(function () { fin(); });
       } catch (e) { fin(); }
@@ -134,10 +147,10 @@ window.Audio2 = (function () {
   // through to the next, then to text-to-speech. Crucially we only remember a
   // definite "no clip" after every format truly 404s; a blocked play (iOS) keeps
   // the valid clip cached for next time instead of disabling the letter.
-  function playClipOrTts(base, ttsFn) {
+  function playClipOrTts(base, ttsFn, rate) {
     var known = clipResolved[base];
-    if (known && known.el) return playElement(known.el);   // fast path: reuse cached clip
-    if (known === 'none') return ttsFn();                  // confirmed: no clip in any format
+    if (known && known.el) return playElement(known.el, rate);   // fast path: reuse cached clip
+    if (known === 'none') return ttsFn();                        // confirmed: no clip in any format
 
     return new Promise(function (resolve) {
       var i = 0;
@@ -146,10 +159,11 @@ window.Audio2 = (function () {
         var a = new Audio(AUDIO_DIR + base + '.' + CLIP_EXTS[i++]);
         var settled = false, backstop;
         function seal() { settled = true; clearTimeout(backstop); a.onended = a.onerror = a.onplaying = null; }
-        a.onplaying = function () { clipResolved[base] = { el: a }; };            // this format works — remember it
+        a.onplaying = function () { clipResolved[base] = { el: a }; applyRate(a, rate); };  // remember + keep speed
         a.onended   = function () { if (!settled) { seal(); resolve(); } };
         a.onerror   = function () { if (!settled) { seal(); tryNext(); } };       // missing/undecodable — try next
         backstop = setTimeout(function () { if (!settled) { seal(); resolve(); } }, 6000);
+        applyRate(a, rate);
         var p;
         try { p = a.play(); } catch (e) { seal(); tryNext(); return; }
         if (p && p.catch) p.catch(function (err) {
@@ -166,11 +180,14 @@ window.Audio2 = (function () {
 
   // ---- public API ----------------------------------------------------------
 
-  function playLetter(letter) {
+  // clipRate/speechRate are optional; the blend passes faster values so the
+  // sound-out is quick and connected. Tapping a tile uses the defaults (full,
+  // stretched sound).
+  function playLetter(letter, clipRate, speechRate) {
     var l = String(letter).toLowerCase();
     return playClipOrTts('letter_' + l, function () {
-      return speak(PHONEME[l] || l, LETTER_RATE, LETTER_PITCH);
-    });
+      return speak(PHONEME[l] || l, speechRate || LETTER_RATE, LETTER_PITCH);
+    }, clipRate);
   }
 
   function playWord(word) {
@@ -180,14 +197,15 @@ window.Audio2 = (function () {
     });
   }
 
-  // The heart of the game: sound out each letter slowly, pause, then say the
-  // whole word ("m … a … t" -> "mat").
+  // The heart of the game: sound out each letter quickly and connected, a short
+  // beat, then say the whole word ("m-a-t" -> "mat"). Letters are sped up and the
+  // gaps are small so it reads as blending, not three separate sounds.
   function playBlend(word) {
     var letters = String(word).toLowerCase().split('');
     var chain = Promise.resolve();
     letters.forEach(function (l, i) {
       chain = chain
-        .then(function () { return playLetter(l); })
+        .then(function () { return playLetter(l, BLEND_CLIP_RATE, BLEND_LETTER_RATE); })
         .then(function () { return wait(i < letters.length - 1 ? GAP_BETWEEN_LETTERS : GAP_BEFORE_WORD); });
     });
     return chain.then(function () { return playWord(word); });
